@@ -26,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp)
 find_package(cmake_modules QUIET)
 
 ## System dependencies are found with CMake's conventions
-find_package(OpenCV 3 REQUIRED)
+find_package(OpenCV 4 REQUIRED)
 find_package(OpenMP)
 find_package(Eigen3)
 find_package(OpenCL)
