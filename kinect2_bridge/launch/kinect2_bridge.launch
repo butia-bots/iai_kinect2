@@ -2,7 +2,7 @@
 
   <arg name="base_name"         default="kinect2"/>
   <arg name="sensor"            default=""/>
-  <arg name="publish_tf"        default="false"/>
+  <arg name="publish_tf"        default="true"/>
   <arg name="base_name_tf"      default="$(arg base_name)"/>
   <arg name="fps_limit"         default="-1.0"/>
   <arg name="calib_path"        default="$(find kinect2_bridge)/data/"/>
@@ -11,11 +11,11 @@
   <arg name="png_level"         default="1"/>
   <arg name="depth_method"      default="default"/>
   <arg name="depth_device"      default="-1"/>
-  <arg name="reg_method"        default="default"/>
+  <arg name="reg_method"        default="cpu"/>
   <arg name="reg_device"        default="-1"/>
   <arg name="max_depth"         default="12.0"/>
-  <arg name="min_depth"         default="0.1"/>
-  <arg name="queue_size"        default="5"/>
+  <arg name="min_depth"         default="0.05"/>
+  <arg name="queue_size"        default="1"/>
   <arg name="bilateral_filter"  default="true"/>
   <arg name="edge_aware_filter" default="true"/>
   <arg name="worker_threads"    default="4"/>
@@ -81,33 +81,7 @@
     <param name="worker_threads"    type="int"    value="$(arg worker_threads)"/>
   </node>
 
-  <!-- sd point cloud (512 x 424) -->
-  <!-- <node pkg="nodelet" type="nodelet" name="$(arg base_name)_points_xyzrgb_sd" machine="$(arg machine)"
-        args="load depth_image_proc/point_cloud_xyzrgb $(arg nodelet_manager)" respawn="$(arg respawn)">
-    <remap from="rgb/camera_info"             to="$(arg base_name)/sd/camera_info"/>
-    <remap from="rgb/image_rect_color"        to="$(arg base_name)/sd/image_color_rect"/>
-    <remap from="depth_registered/image_rect" to="$(arg base_name)/sd/image_depth_rect"/>
-    <remap from="depth_registered/points"     to="$(arg base_name)/sd/points"/>
-    <param name="queue_size" type="int" value="$(arg queue_size)"/>
-  </node> -->
-
-  <!-- qhd point cloud (960 x 540) -->
-  <node pkg="nodelet" type="nodelet" name="$(arg base_name)_points_xyzrgb_qhd" machine="$(arg machine)"
-        args="load depth_image_proc/point_cloud_xyzrgb $(arg nodelet_manager)" respawn="$(arg respawn)">
-    <remap from="rgb/camera_info"             to="$(arg base_name)/qhd/camera_info"/>
-    <remap from="rgb/image_rect_color"        to="$(arg base_name)/qhd/image_color_rect"/>
-    <remap from="depth_registered/image_rect" to="$(arg base_name)/qhd/image_depth_rect"/>
-    <remap from="depth_registered/points"     to="$(arg base_name)/qhd/points"/>
-    <param name="queue_size" type="int" value="$(arg queue_size)"/>
-  </node>
-
-  <!-- hd point cloud (1920 x 1080) -->
-  <!-- <node pkg="nodelet" type="nodelet" name="$(arg base_name)_points_xyzrgb_hd" machine="$(arg machine)"
-        args="load depth_image_proc/point_cloud_xyzrgb $(arg nodelet_manager)" respawn="$(arg respawn)">
-    <remap from="rgb/camera_info"             to="$(arg base_name)/hd/camera_info"/>
-    <remap from="rgb/image_rect_color"        to="$(arg base_name)/hd/image_color_rect"/>
-    <remap from="depth_registered/image_rect" to="$(arg base_name)/hd/image_depth_rect"/>
-    <remap from="depth_registered/points"     to="$(arg base_name)/hd/points"/>
-    <param name="queue_size" type="int" value="$(arg queue_size)"/>
-  </node> -->
+  <include file="$(find kinect2_bridge)/launch/qhd_points.launch">
+    <arg name="queue_size" value="$(arg queue_size)"/>
+  </include>
 </launch>

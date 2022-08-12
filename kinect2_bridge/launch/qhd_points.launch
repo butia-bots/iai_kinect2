@@ -1,0 +1,18 @@
+<launch>
+    <arg name="queue_size"        default="1"/>
+    <!-- Nodelet manager for this pipeline -->
+    <node pkg="nodelet" type="nodelet" args="manager" name="standalone_nodelet" output="screen"/>
+
+
+    <!-- Convert to point cloud -->
+    <node pkg="nodelet" type="nodelet" name="depth_image_proc" args="load depth_image_proc/point_cloud_xyzrgb standalone_nodelet --no-bond">
+   
+        <remap from="rgb/camera_info"             to="kinect2/qhd/camera_info"/>
+        <remap from="rgb/image_rect_color"        to="kinect2/qhd/image_color_rect"/>
+        <remap from="depth_registered/image_rect" to="kinect2/qhd/image_depth_rect"/>
+        <remap from="depth_registered/points"     to="kinect2/qhd/points"/>
+        <param name="queue_size" type="int" value="5"/>
+
+    </node>
+
+</launch>
