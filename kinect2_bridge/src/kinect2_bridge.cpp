@@ -210,7 +210,6 @@ public:
 
     for(size_t i = 0; i < COUNT; ++i)
     {
-      imagePubs[i].shutdown();
       compressedPubs[i].shutdown();
       infoHDPub.shutdown();
       infoQHDPub.shutdown();
@@ -678,8 +677,8 @@ private:
 
   bool loadCalibrationFile(const std::string &filename, cv::Mat &cameraMatrix, cv::Mat &distortion) const
   {
-    cv::FileStorage fs;
-    if(fs.open(filename, cv::FileStorage::READ))
+    cv::FileStorage fs(filename, cv::FileStorage::READ);
+    if(fs.open(filename, cv::FileStorage::FORMAT_YAML))
     {
       fs[K2_CALIB_CAMERA_MATRIX] >> cameraMatrix;
       fs[K2_CALIB_DISTORTION] >> distortion;
