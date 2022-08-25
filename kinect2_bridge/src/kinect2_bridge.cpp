@@ -63,6 +63,7 @@ private:
   std::vector<int> compressionParams;
   std::string compression16BitExt, compression16BitString, baseNameTF;
 
+  int32_t qhd_downsampling_scale;
   cv::Size sizeColor, sizeIr, sizeLowRes;
   libfreenect2::Frame color;
   cv::Mat cameraMatrixColor, distortionColor, cameraMatrixLowRes, cameraMatrixIr, distortionIr, cameraMatrixDepth, distortionDepth;
@@ -224,7 +225,7 @@ private:
   {
     double fps_limit, maxDepth, minDepth;
     bool use_png, bilateral_filter, edge_aware_filter;
-    int32_t jpeg_quality, png_level, queueSize, reg_dev, depth_dev, worker_threads, qhd_downsampling_scale;
+    int32_t jpeg_quality, png_level, queueSize, reg_dev, depth_dev, worker_threads;
     std::string depth_method, reg_method, calib_path, sensor, base_name;
 
     std::string depthDefault = "cpu";
@@ -267,7 +268,7 @@ private:
     worker_threads = std::max(1, worker_threads);
     threads.resize(worker_threads);
 
-    sizeLowRes(sizeColor.width / qhd_downsampling_scale, sizeColor.height / qhd_downsampling_scale)
+    sizeLowRes = cv::Size(sizeColor.width / qhd_downsampling_scale, sizeColor.height / qhd_downsampling_scale);
 
     OUT_INFO("parameter:" << std::endl
              << "        base_name: " FG_CYAN << base_name << NO_COLOR << std::endl
@@ -657,10 +658,10 @@ private:
     }
 
     cameraMatrixLowRes = cameraMatrixColor.clone();
-    cameraMatrixLowRes.at<double>(0, 0) /= 2;
-    cameraMatrixLowRes.at<double>(1, 1) /= 2;
-    cameraMatrixLowRes.at<double>(0, 2) /= 2;
-    cameraMatrixLowRes.at<double>(1, 2) /= 2;
+    cameraMatrixLowRes.at<double>(0, 0) /= qhd_downsampling_scale;
+    cameraMatrixLowRes.at<double>(1, 1) /= qhd_downsampling_scale;
+    cameraMatrixLowRes.at<double>(0, 2) /= qhd_downsampling_scale;
+    cameraMatrixLowRes.at<double>(1, 2) /= qhd_downsampling_scale;
 
     const int mapType = CV_16SC2;
     cv::initUndistortRectifyMap(cameraMatrixColor, distortionColor, cv::Mat(), cameraMatrixColor, sizeColor, mapType, map1Color, map2Color);
