@@ -18,7 +18,8 @@
   <arg name="queue_size"        default="1"/>
   <arg name="bilateral_filter"  default="true"/>
   <arg name="edge_aware_filter" default="true"/>
-  <arg name="worker_threads"    default="4"/>
+  <arg name="worker_threads"    default="3"/>
+  <arg name="qhd_downsampling_scale"    default="2"/>
   <arg name="machine"           default="localhost"/>
   <arg name="nodelet_manager"   default="$(arg base_name)"/>
   <arg name="start_manager"     default="true"/>
@@ -55,6 +56,7 @@
     <param name="bilateral_filter"  type="bool"   value="$(arg bilateral_filter)"/>
     <param name="edge_aware_filter" type="bool"   value="$(arg edge_aware_filter)"/>
     <param name="worker_threads"    type="int"    value="$(arg worker_threads)"/>
+    <param name="qhd_downsampling_scale" type="int" value="$(arg qhd_downsampling_scale)"/>
   </node>
 
   <!-- Node version of kinect2_bridge -->
@@ -79,6 +81,7 @@
     <param name="bilateral_filter"  type="bool"   value="$(arg bilateral_filter)"/>
     <param name="edge_aware_filter" type="bool"   value="$(arg edge_aware_filter)"/>
     <param name="worker_threads"    type="int"    value="$(arg worker_threads)"/>
+    <param name="qhd_downsampling_scale" type="int" value="$(arg qhd_downsampling_scale)"/>
   </node>
 
   <include file="$(find kinect2_bridge)/launch/qhd_points.launch">

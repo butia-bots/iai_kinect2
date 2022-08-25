@@ -135,7 +135,7 @@ private:
 
 public:
   Kinect2Bridge(const ros::NodeHandle &nh = ros::NodeHandle(), const ros::NodeHandle &priv_nh = ros::NodeHandle("~"))
-    : sizeColor(1920, 1080), sizeIr(512, 424), sizeLowRes(sizeColor.width / 2, sizeColor.height / 2), color(sizeColor.width, sizeColor.height, 4), nh(nh), priv_nh(priv_nh),
+    : sizeColor(1920, 1080), sizeIr(512, 424), color(sizeColor.width, sizeColor.height, 4), nh(nh), priv_nh(priv_nh),
       frameColor(0), frameIrDepth(0), pubFrameColor(0), pubFrameIrDepth(0), lastColor(0, 0), lastDepth(0, 0), nextColor(false),
       nextIrDepth(false), depthShift(0), running(false), deviceActive(false), clientConnected(false)
   {
@@ -224,7 +224,7 @@ private:
   {
     double fps_limit, maxDepth, minDepth;
     bool use_png, bilateral_filter, edge_aware_filter;
-    int32_t jpeg_quality, png_level, queueSize, reg_dev, depth_dev, worker_threads;
+    int32_t jpeg_quality, png_level, queueSize, reg_dev, depth_dev, worker_threads, qhd_downsampling_scale;
     std::string depth_method, reg_method, calib_path, sensor, base_name;
 
     std::string depthDefault = "cpu";
@@ -262,9 +262,12 @@ private:
     priv_nh.param("publish_tf", publishTF, false);
     priv_nh.param("base_name_tf", baseNameTF, base_name);
     priv_nh.param("worker_threads", worker_threads, 4);
+    priv_nh.param("qhd_downsampling_scale", qhd_downsampling_scale, 2);
 
     worker_threads = std::max(1, worker_threads);
     threads.resize(worker_threads);
+
+    sizeLowRes(sizeColor.width / qhd_downsampling_scale, sizeColor.height / qhd_downsampling_scale)
 
     OUT_INFO("parameter:" << std::endl
              << "        base_name: " FG_CYAN << base_name << NO_COLOR << std::endl
@@ -285,7 +288,8 @@ private:
              << "edge_aware_filter: " FG_CYAN << (edge_aware_filter ? "true" : "false") << NO_COLOR << std::endl
              << "       publish_tf: " FG_CYAN << (publishTF ? "true" : "false") << NO_COLOR << std::endl
              << "     base_name_tf: " FG_CYAN << baseNameTF << NO_COLOR << std::endl
-             << "   worker_threads: " FG_CYAN << worker_threads << NO_COLOR);
+             << "   worker_threads: " FG_CYAN << worker_threads << NO_COLOR
+             << "   qhd_downsampling_scale: " FG_CYAN << qhd_downsampling_scale << NO_COLOR);
 
     deltaT = fps_limit > 0 ? 1.0 / fps_limit : 0.0;
 
@@ -1580,6 +1584,7 @@ void help(const std::string &path)
   helpOption("publish_tf",        "bool",   "false",        "publish static tf transforms for camera");
   helpOption("base_name_tf",      "string", "as base_name", "base name for the tf frames");
   helpOption("worker_threads",    "int",    "4",            "number of threads used for processing the images");
+  helpOption("qhd_downsampling_scale",    "int",    "2",            "division factor to do the downscale of hd data to generate the qhd ones");
 }
 
 int main(int argc, char **argv)

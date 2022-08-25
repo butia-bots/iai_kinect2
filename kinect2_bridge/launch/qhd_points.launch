@@ -7,11 +7,11 @@
     <!-- Convert to point cloud -->
     <node pkg="nodelet" type="nodelet" name="depth_image_proc" args="load depth_image_proc/point_cloud_xyzrgb standalone_nodelet --no-bond">
    
-        <remap from="rgb/camera_info"             to="kinect2/qhd/camera_info"/>
-        <remap from="rgb/image_rect_color"        to="kinect2/qhd/image_color_rect"/>
-        <remap from="depth_registered/image_rect" to="kinect2/qhd/image_depth_rect"/>
-        <remap from="depth_registered/points"     to="kinect2/qhd/points"/>
-        <param name="queue_size" type="int" value="5"/>
+        <remap from="rgb/camera_info"             to="kinect2/sd/camera_info"/>
+        <remap from="rgb/image_rect_color"        to="kinect2/sd/image_color_rect"/>
+        <remap from="depth_registered/image_rect" to="kinect2/sd/image_depth_rect"/>
+        <remap from="depth_registered/points"     to="kinect2/sd/points"/>
+        <param name="queue_size" type="int" value="$(arg queue_size)"/>
 
     </node>
 
