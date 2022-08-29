@@ -153,11 +153,12 @@ void DepthRegistrationCPU::projectDepth(const cv::Mat &scaled, cv::Mat &register
       Eigen::Vector4d pointP = proj * pointD;
 
       const double z = pointP[2];
-
+    
       const double invZ = 1 / z;
       const int xP = (fx * pointP[0]) * invZ + cx;
       const int yP = (fy * pointP[1]) * invZ + cy;
-
+      
+      
       if(xP >= 0 && xP < sizeRegistered.width && yP >= 0 && yP < sizeRegistered.height)
       {
         const uint16_t z16 = z * 1000;

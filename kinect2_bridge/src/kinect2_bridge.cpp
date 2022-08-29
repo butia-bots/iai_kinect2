@@ -63,6 +63,7 @@ private:
   std::vector<int> compressionParams;
   std::string compression16BitExt, compression16BitString, baseNameTF;
 
+  int32_t qhd_downsampling_scale;
   cv::Size sizeColor, sizeIr, sizeLowRes;
   libfreenect2::Frame color;
   cv::Mat cameraMatrixColor, distortionColor, cameraMatrixLowRes, cameraMatrixIr, distortionIr, cameraMatrixDepth, distortionDepth;
@@ -135,7 +136,7 @@ private:
 
 public:
   Kinect2Bridge(const ros::NodeHandle &nh = ros::NodeHandle(), const ros::NodeHandle &priv_nh = ros::NodeHandle("~"))
-    : sizeColor(1920, 1080), sizeIr(512, 424), sizeLowRes(sizeColor.width / 2, sizeColor.height / 2), color(sizeColor.width, sizeColor.height, 4), nh(nh), priv_nh(priv_nh),
+    : sizeColor(1920, 1080), sizeIr(512, 424), color(sizeColor.width, sizeColor.height, 4), nh(nh), priv_nh(priv_nh),
       frameColor(0), frameIrDepth(0), pubFrameColor(0), pubFrameIrDepth(0), lastColor(0, 0), lastDepth(0, 0), nextColor(false),
       nextIrDepth(false), depthShift(0), running(false), deviceActive(false), clientConnected(false)
   {
@@ -210,7 +211,6 @@ public:
 
     for(size_t i = 0; i < COUNT; ++i)
     {
-      imagePubs[i].shutdown();
       compressedPubs[i].shutdown();
       infoHDPub.shutdown();
       infoQHDPub.shutdown();
@@ -263,9 +263,12 @@ private:
     priv_nh.param("publish_tf", publishTF, false);
     priv_nh.param("base_name_tf", baseNameTF, base_name);
     priv_nh.param("worker_threads", worker_threads, 4);
+    priv_nh.param("qhd_downsampling_scale", qhd_downsampling_scale, 2);
 
     worker_threads = std::max(1, worker_threads);
     threads.resize(worker_threads);
+
+    sizeLowRes = cv::Size(sizeColor.width / qhd_downsampling_scale, sizeColor.height / qhd_downsampling_scale);
 
     OUT_INFO("parameter:" << std::endl
              << "        base_name: " FG_CYAN << base_name << NO_COLOR << std::endl
@@ -286,7 +289,8 @@ private:
              << "edge_aware_filter: " FG_CYAN << (edge_aware_filter ? "true" : "false") << NO_COLOR << std::endl
              << "       publish_tf: " FG_CYAN << (publishTF ? "true" : "false") << NO_COLOR << std::endl
              << "     base_name_tf: " FG_CYAN << baseNameTF << NO_COLOR << std::endl
-             << "   worker_threads: " FG_CYAN << worker_threads << NO_COLOR);
+             << "   worker_threads: " FG_CYAN << worker_threads << NO_COLOR
+             << "   qhd_downsampling_scale: " FG_CYAN << qhd_downsampling_scale << NO_COLOR);
 
     deltaT = fps_limit > 0 ? 1.0 / fps_limit : 0.0;
 
@@ -654,10 +658,10 @@ private:
     }
 
     cameraMatrixLowRes = cameraMatrixColor.clone();
-    cameraMatrixLowRes.at<double>(0, 0) /= 2;
-    cameraMatrixLowRes.at<double>(1, 1) /= 2;
-    cameraMatrixLowRes.at<double>(0, 2) /= 2;
-    cameraMatrixLowRes.at<double>(1, 2) /= 2;
+    cameraMatrixLowRes.at<double>(0, 0) /= qhd_downsampling_scale;
+    cameraMatrixLowRes.at<double>(1, 1) /= qhd_downsampling_scale;
+    cameraMatrixLowRes.at<double>(0, 2) /= qhd_downsampling_scale;
+    cameraMatrixLowRes.at<double>(1, 2) /= qhd_downsampling_scale;
 
     const int mapType = CV_16SC2;
     cv::initUndistortRectifyMap(cameraMatrixColor, distortionColor, cv::Mat(), cameraMatrixColor, sizeColor, mapType, map1Color, map2Color);
@@ -678,8 +682,8 @@ private:
 
   bool loadCalibrationFile(const std::string &filename, cv::Mat &cameraMatrix, cv::Mat &distortion) const
   {
-    cv::FileStorage fs;
-    if(fs.open(filename, cv::FileStorage::READ))
+    cv::FileStorage fs(filename, cv::FileStorage::READ);
+    if(fs.open(filename, cv::FileStorage::FORMAT_YAML))
     {
       fs[K2_CALIB_CAMERA_MATRIX] >> cameraMatrix;
       fs[K2_CALIB_DISTORTION] >> distortion;
@@ -1581,6 +1585,7 @@ void help(const std::string &path)
   helpOption("publish_tf",        "bool",   "false",        "publish static tf transforms for camera");
   helpOption("base_name_tf",      "string", "as base_name", "base name for the tf frames");
   helpOption("worker_threads",    "int",    "4",            "number of threads used for processing the images");
+  helpOption("qhd_downsampling_scale",    "int",    "2",            "division factor to do the downscale of hd data to generate the qhd ones");
 }
 
 int main(int argc, char **argv)
