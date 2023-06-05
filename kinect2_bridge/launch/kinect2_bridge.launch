@@ -25,8 +25,9 @@
   <arg name="start_manager"     default="true"/>
   <arg name="use_machine"       default="true"/>
   <arg name="respawn"           default="true"/>
-  <arg name="use_nodelet"       default="false"/>
+  <arg name="use_nodelet"       default="true"/>
   <arg name="output"            default="screen"/>
+  <arg name="node_start_delay"  default="1.0" />
 
   <machine name="localhost" address="localhost" if="$(arg use_machine)"/>
 
@@ -36,7 +37,7 @@
   <!-- Nodelet version of kinect2_bridge -->
   <node pkg="nodelet" type="nodelet" name="$(arg base_name)_bridge" machine="$(arg machine)"
         args="load kinect2_bridge/kinect2_bridge_nodelet $(arg nodelet_manager)"
-        respawn="$(arg respawn)" output="$(arg output)" if="$(arg use_nodelet)">
+        respawn="$(arg respawn)" output="$(arg output)" if="$(arg use_nodelet)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' ">
     <param name="base_name"         type="str"    value="$(arg base_name)"/>
     <param name="sensor"            type="str"    value="$(arg sensor)"/>
     <param name="publish_tf"        type="bool"   value="$(arg publish_tf)"/>
@@ -61,7 +62,7 @@
 
   <!-- Node version of kinect2_bridge -->
   <node pkg="kinect2_bridge" type="kinect2_bridge" name="$(arg base_name)_bridge" machine="$(arg machine)"
-        respawn="$(arg respawn)" output="$(arg output)" unless="$(arg use_nodelet)">
+        respawn="$(arg respawn)" output="$(arg output)" unless="$(arg use_nodelet)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' ">
     <param name="base_name"         type="str"    value="$(arg base_name)"/>
     <param name="sensor"            type="str"    value="$(arg sensor)"/>
     <param name="publish_tf"        type="bool"   value="$(arg publish_tf)"/>
@@ -96,7 +97,7 @@
 
   <!-- qhd point cloud (960 x 540) -->
   <node pkg="nodelet" type="nodelet" name="$(arg base_name)_points_xyzrgb_qhd" machine="$(arg machine)"
-        args="load depth_image_proc/point_cloud_xyzrgb $(arg nodelet_manager)" respawn="$(arg respawn)">
+        args="load depth_image_proc/point_cloud_xyzrgb $(arg nodelet_manager)" respawn="$(arg respawn)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' ">
     <remap from="rgb/camera_info"             to="$(arg base_name)/qhd/camera_info"/>
     <remap from="rgb/image_rect_color"        to="$(arg base_name)/qhd/image_color_rect"/>
     <remap from="depth_registered/image_rect" to="$(arg base_name)/qhd/image_depth_rect"/>
